@@ -1,0 +1,95 @@
+{
+  "author": "Othmane Hassani",
+  "published_on": "2026-10-08",
+  "code_authored_and_executed_in": "IBM Bob",
+  "evaluation": "skore",
+  "script_path": "experiments/02_day2_models.py",
+  "script_sha256": "5230c980adcf56dd28b0f8e9c6a40970cb6c7f928a386ff6c44359b6457b4e5a",
+  "data_provenance": {
+    "source": "https://www.kaggle.com/competitions/bobathon-esilv/data",
+    "downloaded_at": "2026-10-07T21:35:33.435690+02:00",
+    "archive": "bobathon-esilv.zip",
+    "files": {
+      "X_test.csv": "33b3906ba1847567dab3a1a08d3bb2250010fe6c30630cbdc63a716696251d36",
+      "X_train.csv": "ae117940d28ab480a7e6f0da5bc535f6175229653459f5ce6ffabda0cf7e9534",
+      "sample_submission.csv": "ad487074d1e2a5673d62f5d09a64f7ea2e8fcb6c508d8f2aa28de67fcc55ffaf",
+      "y_train.csv": "8d8583da6899fa8cbe58b1dd522693f24211da93f6b376ae42ba471394743775"
+    },
+    "notes": "Downloaded through signed-in Kaggle Download All > Download as zip. Official X_train/X_test omit rater_id and have different ON/OFF values from inherited GitHub CSVs. Use these official files for Day 2."
+  },
+  "submitted_run": {
+    "data_source": "data/kaggle_official",
+    "model_name": "hgbr_mixed",
+    "cv_splits": "GroupKFold(n_splits=5, groups=patient_id)",
+    "fold_rmse": [
+      7.484926406025298,
+      7.550232477357783,
+      7.258698333614169,
+      7.310903022799468,
+      7.530329580464435
+    ],
+    "mean_cv_rmse": 7.42701796405223,
+    "all_models_mean_rmse": {
+      "dummy_mean": 16.499183969125937,
+      "ridge": 10.436546878569883,
+      "hgbr_num": 7.434293409731415,
+      "hgbr_mixed": 7.42701796405223
+    },
+    "best_cv_key": "02_cv_hgbr_mixed_othmane_2",
+    "best_cv_url": "https://skore.probabl.ai/julien.gouel/bobathon-esilv/cross-validations/50335",
+    "estimator_report_key": "02_fold5_hgbr_mixed_othmane_2",
+    "estimator_report_url": "https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/50341",
+    "csv_path": "submissions/02_fold5_hgbr_mixed_othmane_2.csv"
+  },
+  "latest_verified_script_run": {
+    "data_source": "data/kaggle_official",
+    "model_name": "hgbr_mixed",
+    "cv_splits": "GroupKFold(n_splits=5, groups=patient_id)",
+    "fold_rmse": [
+      7.484926406025298,
+      7.550232477357783,
+      7.258698333614169,
+      7.310903022799468,
+      7.530329580464435
+    ],
+    "mean_cv_rmse": 7.42701796405223,
+    "all_models_mean_rmse": {
+      "dummy_mean": 16.499183969125937,
+      "ridge": 10.436546878569883,
+      "hgbr_num": 7.434293409731415,
+      "hgbr_mixed": 7.42701796405223
+    },
+    "best_cv_key": "02_cv_hgbr_mixed_othmane_3",
+    "best_cv_url": "https://skore.probabl.ai/julien.gouel/bobathon-esilv/cross-validations/50437",
+    "estimator_report_key": "02_fold5_hgbr_mixed_othmane_3",
+    "estimator_report_url": "https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/50443",
+    "csv_path": "submissions/02_fold5_hgbr_mixed_othmane_3.csv"
+  },
+  "submitted_and_latest_predictions_byte_identical": true,
+  "submission_sha256": "ee3208187b34677a74d4ba02add9ee598316b7c40934ff850e6b97481a06367d",
+  "kaggle": {
+    "status": "Success",
+    "submitted_by": "Othmane HASSANI",
+    "team": "Julien Gouel",
+    "file": "02_fold5_hgbr_mixed_othmane_2.csv",
+    "public_score": 7.142,
+    "previous_public_score": 16.421,
+    "error_reduction_percent": 56.50691188112783,
+    "verified_at": "2026-10-07T21:50:25.662747+02:00",
+    "page": "https://www.kaggle.com/competitions/bobathon-esilv/submissions",
+    "estimator_report_url": "https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/50341",
+    "description": "Othmane — mixed HistGradientBoosting; official Kaggle data; 5-fold patient-grouped CV RMSE 7.4270; fitted on all training rows. Skore EstimatorReport: https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/50341",
+    "official_eligibility": "Unconfirmed: Overview and Rules publish conflicting submission windows."
+  },
+  "environment": {
+    "python": "3.12.14",
+    "packages": {
+      "numpy": "2.5.3",
+      "pandas": "3.0.6",
+      "scikit-learn": "1.9.1",
+      "skrub": "0.11.0",
+      "skore": "0.26.0",
+      "skore-cli": "0.4.1"
+    }
+  }
+}
