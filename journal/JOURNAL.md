@@ -12,8 +12,8 @@ stem).
 
 - **Project / dataset:** Parkinson's Disease UPDRS Motor Score — regression
 - **Goal:** Predict the UPDRS motor score (`target`) for each patient visit from clinical features; minimise prediction error on the held-out test set.
-- **Last experiment:** 02_day2_models — done
-- **Last result:** mean grouped-CV RMSE 7.43 (hgbr_mixed, 5-fold GroupKFold, official Kaggle data)
+- **Last experiment:** 04_hgb_rich_patient_feats — done
+- **Last result:** mean grouped-CV RMSE 3.4831 (hgb_tuned_rich, GroupKFold 5, Kaggle_officiel)
 - **Verified Kaggle public result:** 7.142 — Othmane, 2026-10-07, team Julien Gouel.
 - **Team handoff:** [Othmane's solution, data provenance and next steps](OTHMANE_HANDOFF.md).
 
@@ -42,6 +42,7 @@ stem).
 |---|---|---|---|---|
 | `01_dummy` | DummyRegressor(mean) baseline — floor for all future models | done | RMSE 16.48 (0.2 holdout) | [01_dummy.md](01_dummy.md) |
 | `02_day2_models` | Four-model comparison with 5-fold patient-grouped CV; best: hgbr_mixed | done | mean CV RMSE 7.43 (hgbr_mixed, GroupKFold 5, official data) | [02_day2_models.md](02_day2_models.md) |
+| `04_hgb_rich_patient_feats` | Rich per-patient temporal features + tuned HGB | done | mean CV RMSE 3.4831 ± 0.0167 (hgb_tuned_rich, GroupKFold 5) | [04_hgb_rich_patient_feats.md](04_hgb_rich_patient_feats.md) |
 
 ## Backlog
 
