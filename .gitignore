@@ -21,6 +21,9 @@ scratch/
 # the leaderboard, not git, is the record)
 submissions/
 
+# Official competition download is local; publish code and provenance only.
+data/kaggle_official/
+
 # bytecode
 __pycache__/
 *.pyc
