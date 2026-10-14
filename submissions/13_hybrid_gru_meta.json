@@ -1,0 +1,28 @@
+{
+  "experiment": "13_hybrid_gru",
+  "provenance": {
+    "two_stage_mle": "github.com/Harry01530/bobathon-esilv@a608a6f86a MRO-fixed relative-imports",
+    "seq_gru": "scratch/test13_bob/test_13/seq_gru.py (Index tie-breaker added)",
+    "ensemble_mle": "scratch/test13_bob/parkinsons13/ensemble_mle.py (Bob 2026-10-14)"
+  },
+  "gru_epochs": 60,
+  "gru_seeds": 1,
+  "cv_folds_rmse": [
+    2.5562,
+    2.5764,
+    2.5446,
+    2.5698,
+    2.5517
+  ],
+  "cv_mean_rmse": 2.5598,
+  "cv_std_rmse": 0.0117,
+  "hub_est_key": "13_fold5_hybrid_gru",
+  "hub_cv_key": "13_cv_hybrid_gru",
+  "hub_est_url": "https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/85398",
+  "hub_cv_url": "https://skore.probabl.ai/julien.gouel/bobathon-esilv/cross-validations/85779",
+  "csv_path": "/Users/mac/Documents/Codex/2026-10-07/in/outputs/bobathon-esilv/submissions/13_fold5_hybrid_gru.csv",
+  "kaggle_public_rmse": 2.642,
+  "kaggle_status": "Complete",
+  "csv_sha256": "f82943a73f76053bca34e397f56e42663c1617300efcfe57a1221bb0ed966dc7",
+  "kaggle_description_estimator_url": "https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/85398"
+}

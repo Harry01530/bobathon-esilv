@@ -1,0 +1,25 @@
+{
+  "experiment": "12_voting_ensemble",
+  "provenance": "https://github.com/Harry01530/bobathon-esilv @ a608a6f86a0f7886f46982bf19535fcfb8b99cd6",
+  "mro_fix": "RegressorMixin before BaseEstimator (sklearn 1.9)",
+  "cv_folds_rmse": [
+    2.7077,
+    2.6827,
+    2.6357,
+    2.654,
+    2.7118
+  ],
+  "cv_mean_rmse": 2.6784,
+  "cv_std_rmse": 0.0297,
+  "hub_est_key": "12_voting_ensemble",
+  "hub_cv_key": "12_cv_voting_ensemble",
+  "hub_url": "https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/82849",
+  "csv_path": "/Users/mac/Documents/Codex/2026-10-07/in/outputs/bobathon-esilv/submissions/12_voting_ensemble.csv",
+  "hub_est_url": "https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/82849",
+  "csv_sha256": "a622204e5d732f54732153094ba38042813074a265a52314970a391a4a6c8c06",
+  "finalization": "Filename and real estimator URL finalized in IBM Bob terminal; no retraining",
+  "hub_cv_url": "https://skore.probabl.ai/julien.gouel/bobathon-esilv/cross-validations/83280",
+  "kaggle_public_rmse": 2.708,
+  "kaggle_status": "Complete",
+  "kaggle_description_estimator_url": "https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/82849"
+}

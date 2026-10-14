@@ -1,0 +1,25 @@
+{
+  "baseline_weights": [
+    0.25,
+    0.25,
+    0.5
+  ],
+  "baseline_fold_rmses": [
+    2.5562,
+    2.5764,
+    2.5446,
+    2.5698,
+    2.5517
+  ],
+  "baseline_mean4": 2.5618,
+  "baseline_mean5": 2.5598,
+  "best_weights": [
+    0.25,
+    0.25,
+    0.5
+  ],
+  "best_mean4_rmse": 2.5618,
+  "gain_sel": 0.0,
+  "n_fine_candidates": 82,
+  "selected_on": "folds 0-3 only"
+}
