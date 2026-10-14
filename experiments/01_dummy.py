@@ -11,8 +11,8 @@ import math
 
 import pandas as pd
 import skore
-from skore import login
 from sklearn.dummy import DummyRegressor
+from skore import login
 
 from parkinsons import PROJECT_ROOT
 from parkinsons.data import FEATURE_COLS, TARGET_COL, load_test_dataset
@@ -73,7 +73,9 @@ if rmse_val is None or (isinstance(rmse_val, float) and math.isnan(rmse_val)):
         rmse_val = "unavailable"
 
 print(f"RMSE (0.2 holdout): {rmse_val}")
-print(f"Report URL: https://app.skore.probabl.ai/{cfg['workspace']}/projects/bobathon-esilv")
+print(
+    f"Report URL: https://app.skore.probabl.ai/{cfg['workspace']}/projects/bobathon-esilv"
+)
 
 # %% [markdown]
 # ## Fit on all training data and write the submission CSV

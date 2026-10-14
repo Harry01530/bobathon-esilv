@@ -14,32 +14,38 @@ import numpy as np
 import pandas as pd
 import skore
 from scipy.stats import loguniform, randint
-from skore import login
 from sklearn.base import clone
 from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.model_selection import GroupKFold, RandomizedSearchCV
+from skore import login
 
 from parkinsons.hub import load_skore_credentials
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-PROJECT_ROOT    = Path(__file__).resolve().parents[1]
-DATA_DIR        = PROJECT_ROOT / "data" / "Kaggle_officiel"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = PROJECT_ROOT / "data" / "Kaggle_officiel"
 SUBMISSIONS_DIR = PROJECT_ROOT / "submissions"
 SUBMISSIONS_DIR.mkdir(exist_ok=True)
 
 NUMERIC_COLS = [
-    "sexM", "age_at_diagnosis", "age", "ledd",
-    "time_since_intake_on", "time_since_intake_off", "on", "off",
+    "sexM",
+    "age_at_diagnosis",
+    "age",
+    "ledd",
+    "time_since_intake_on",
+    "time_since_intake_off",
+    "on",
+    "off",
 ]
-CAT_COLS  = ["cohort", "gene"]
+CAT_COLS = ["cohort", "gene"]
 FORBIDDEN = {"Index", "patient_id", "target", "rater_id"}
 TUNE_SEED = 42
-N_ITER    = 20
+N_ITER = 20
 
 # ── Load data ─────────────────────────────────────────────────────────────────
 X_train_raw = pd.read_csv(DATA_DIR / "X_train.csv")
-X_test_raw  = pd.read_csv(DATA_DIR / "X_test.csv")
-sample_sub  = pd.read_csv(DATA_DIR / "sample_submission.csv")
+X_test_raw = pd.read_csv(DATA_DIR / "X_test.csv")
+sample_sub = pd.read_csv(DATA_DIR / "sample_submission.csv")
 y = (
     pd.read_csv(DATA_DIR / "y_train.csv")
     .set_index("Index")["target"]
@@ -56,6 +62,7 @@ CAT_DTYPES = {
     for c in CAT_COLS
 }
 
+
 # ── Feature engineering ───────────────────────────────────────────────────────
 def build_features(raw: pd.DataFrame) -> pd.DataFrame:
     """Build all features from X columns only.
@@ -68,7 +75,7 @@ def build_features(raw: pd.DataFrame) -> pd.DataFrame:
 
     # ── Sort for ordered within-patient operations ─────────────────────────
     order = raw.sort_values(["patient_id", "age"], kind="stable").index
-    s = raw.loc[order].copy()          # sorted view (index = original row labels)
+    s = raw.loc[order].copy()  # sorted view (index = original row labels)
     g = s.groupby("patient_id", sort=False)
 
     feat = pd.DataFrame(index=s.index)
@@ -80,15 +87,15 @@ def build_features(raw: pd.DataFrame) -> pd.DataFrame:
         feat[c] = s[c].astype(CAT_DTYPES[c])
 
     # 2. Derived simple
-    feat["years_dx"]  = s["age"] - s["age_at_diagnosis"]
-    feat["off_na"]    = s["off"].isna().astype(np.int8)
-    feat["on_na"]     = s["on"].isna().astype(np.int8)
-    feat["ledd_na"]   = s["ledd"].isna().astype(np.int8)
+    feat["years_dx"] = s["age"] - s["age_at_diagnosis"]
+    feat["off_na"] = s["off"].isna().astype(np.int8)
+    feat["on_na"] = s["on"].isna().astype(np.int8)
+    feat["ledd_na"] = s["ledd"].isna().astype(np.int8)
 
     # 3. Visit order
-    feat["vis_rank"]    = g["age"].rank(method="first") - 1          # 0-based
+    feat["vis_rank"] = g["age"].rank(method="first") - 1  # 0-based
     feat["since_first"] = s["age"] - g["age"].transform("min")
-    feat["n_vis"]       = g["age"].transform("size")
+    feat["n_vis"] = g["age"].transform("size")
 
     # 4. Neighbour values (within patient group)
     for c in ["off", "on"]:
@@ -110,7 +117,7 @@ def build_features(raw: pd.DataFrame) -> pd.DataFrame:
     # 6. Whole-patient aggregates
     for c in ["off", "on", "ledd"]:
         feat[f"{c}_pmean"] = g[c].transform("mean")
-        feat[f"{c}_pmax"]  = g[c].transform("max")
+        feat[f"{c}_pmax"] = g[c].transform("max")
     feat["off_dev"] = s["off"] - feat["off_pmean"]
 
     # 7. Per-patient polynomial trend (off, on)
@@ -120,22 +127,22 @@ def build_features(raw: pd.DataFrame) -> pd.DataFrame:
         res1 = np.full(len(s), np.nan)
         res2 = np.full(len(s), np.nan)
 
-        pos_array = np.arange(len(s))   # maps to s's positional index
+        pos_array = np.arange(len(s))  # maps to s's positional index
         for pid, idx in g.groups.items():
             pos = pos_array[s.index.get_indexer(idx)]
-            ages  = s.loc[idx, "age"].values
-            vals  = s.loc[idx, c].values
-            mask  = ~np.isnan(vals)
+            ages = s.loc[idx, "age"].values
+            vals = s.loc[idx, c].values
+            mask = ~np.isnan(vals)
             if mask.sum() >= 2 and ages[mask].max() - ages[mask].min() > 0:
                 age_c = ages[mask] - ages[mask].mean()
                 poly1 = np.polyfit(age_c, vals[mask], 1)
-                f1    = np.polyval(poly1, ages - ages[mask].mean())
+                f1 = np.polyval(poly1, ages - ages[mask].mean())
                 fit1[pos] = f1
                 res1[pos] = vals - f1
             if mask.sum() >= 3 and ages[mask].max() - ages[mask].min() > 0:
                 age_c = ages[mask] - ages[mask].mean()
                 poly2 = np.polyfit(age_c, vals[mask], 2)
-                f2    = np.polyval(poly2, ages - ages[mask].mean())
+                f2 = np.polyval(poly2, ages - ages[mask].mean())
                 fit2[pos] = f2
                 res2[pos] = vals - f2
 
@@ -179,24 +186,31 @@ print(f"Feature matrix: {X.shape[1]} columns")
 
 # ── CV helpers ────────────────────────────────────────────────────────────────
 def cv_fold_rmses(cv_report, label: str):
-    df    = cv_report.metrics.get("rmse", data_source="test", aggregate=None)
+    df = cv_report.metrics.get("rmse", data_source="test", aggregate=None)
     folds = df.values.flatten().tolist()
-    assert len(folds) == 5 and all(np.isfinite(v) for v in folds), \
+    assert len(folds) == 5 and all(np.isfinite(v) for v in folds), (
         f"{label}: bad folds {folds}"
+    )
     arr = np.array(folds)
-    print(f"  {label:28s} folds={[round(v, 3) for v in folds]} "
-          f"mean={arr.mean():.4f} std={arr.std():.4f}")
+    print(
+        f"  {label:28s} folds={[round(v, 3) for v in folds]} "
+        f"mean={arr.mean():.4f} std={arr.std():.4f}"
+    )
     return folds, float(arr.mean()), float(arr.std())
 
 
 # ── a) Sanity gate ────────────────────────────────────────────────────────────
 print("\n[a] Sanity: default HGB on eval_splits …")
 default_hgb = HistGradientBoostingRegressor(
-    max_iter=300, learning_rate=0.05, random_state=0,
+    max_iter=300,
+    learning_rate=0.05,
+    random_state=0,
     categorical_features="from_dtype",
 )
 sanity_report = skore.evaluate(default_hgb, X, y, splitter=eval_splits)
-sanity_folds, sanity_mean, sanity_std = cv_fold_rmses(sanity_report, "hgb_default_rich_sanity")
+sanity_folds, sanity_mean, sanity_std = cv_fold_rmses(
+    sanity_report, "hgb_default_rich_sanity"
+)
 
 if sanity_mean > 3.7:
     raise RuntimeError(
@@ -213,15 +227,16 @@ base_hgb = HistGradientBoostingRegressor(
     random_state=0,
 )
 param_distributions = {
-    "learning_rate":   loguniform(0.02, 0.2),
-    "max_iter":        randint(150, 801),
-    "max_leaf_nodes":  [15, 31, 63],
+    "learning_rate": loguniform(0.02, 0.2),
+    "max_iter": randint(150, 801),
+    "max_leaf_nodes": [15, 31, 63],
     "min_samples_leaf": [10, 20, 50, 100, 200],
     "l2_regularization": loguniform(1e-3, 10),
-    "max_features":    [0.5, 0.8, 1.0],
+    "max_features": [0.5, 0.8, 1.0],
 }
 search = RandomizedSearchCV(
-    base_hgb, param_distributions,
+    base_hgb,
+    param_distributions,
     n_iter=N_ITER,
     scoring="neg_root_mean_squared_error",
     cv=tune_splits,
@@ -237,14 +252,17 @@ print(f"  best params = {best_params}")
 # ── c) Evaluation: default vs tuned ───────────────────────────────────────────
 print("\n[c] Evaluating default vs tuned on eval_splits …")
 default_eval = HistGradientBoostingRegressor(
-    max_iter=300, learning_rate=0.05, random_state=0,
+    max_iter=300,
+    learning_rate=0.05,
+    random_state=0,
     categorical_features="from_dtype",
 )
 tuned_eval = clone(base_hgb).set_params(**best_params)
 
 comp = skore.evaluate(
     {"hgb_default_rich": default_eval, "hgb_tuned_rich": tuned_eval},
-    X, y,
+    X,
+    y,
     splitter=eval_splits,
 )
 
@@ -255,16 +273,17 @@ for name, cv_rep in comp.reports_.items():
     eval_results[name] = {
         "cv_report": cv_rep,
         "model": default_eval if "default" in name else tuned_eval,
-        "folds": folds, "mean": mean, "std": std,
+        "folds": folds,
+        "mean": mean,
+        "std": std,
     }
 
-best_name  = min(eval_results, key=lambda k: eval_results[k]["mean"])
-best       = eval_results[best_name]
+best_name = min(eval_results, key=lambda k: eval_results[k]["mean"])
+best = eval_results[best_name]
 other_name = [n for n in eval_results if n != best_name][0]
-other      = eval_results[other_name]
-gain       = other["mean"] - best["mean"]
-print(f"\nBest: {best_name}  mean={best['mean']:.4f}  "
-      f"gain vs other: {gain:+.4f}")
+other = eval_results[other_name]
+gain = other["mean"] - best["mean"]
+print(f"\nBest: {best_name}  mean={best['mean']:.4f}  gain vs other: {gain:+.4f}")
 if gain <= best["std"]:
     print("WARNING: gain is within fold-to-fold spread.")
 
@@ -272,7 +291,7 @@ if gain <= best["std"]:
 print("\n[d] Uploading to hub …")
 cfg = load_skore_credentials()
 login(mode="hub")
-project     = skore.Project(name="bobathon-esilv", mode="hub", workspace=cfg["workspace"])
+project = skore.Project(name="bobathon-esilv", mode="hub", workspace=cfg["workspace"])
 existing_keys = set(project.summarize().frame()["key"].tolist())
 
 
@@ -294,8 +313,8 @@ def put_and_capture_url(key: str, report) -> str:
     return urls[-1].rstrip("/") if urls else "url-not-captured"
 
 
-cv_key  = free_key("04_cv_hgb_rich")
-cv_url  = put_and_capture_url(cv_key, best["cv_report"])
+cv_key = free_key("04_cv_hgb_rich")
+cv_url = put_and_capture_url(cv_key, best["cv_report"])
 est_key = free_key("04_fold5_hgb_rich")
 est_url = put_and_capture_url(est_key, best["cv_report"].reports_[4])
 
@@ -324,10 +343,14 @@ submission.to_csv(csv_path, index=False)
 d = eval_results["hgb_default_rich"]
 t = eval_results["hgb_tuned_rich"]
 print(f"\n{'=' * 62}")
-print(f"hgb_default_rich : folds={[round(v,3) for v in d['folds']]}  "
-      f"mean={d['mean']:.4f}  std={d['std']:.4f}")
-print(f"hgb_tuned_rich   : folds={[round(v,3) for v in t['folds']]}  "
-      f"mean={t['mean']:.4f}  std={t['std']:.4f}")
+print(
+    f"hgb_default_rich : folds={[round(v, 3) for v in d['folds']]}  "
+    f"mean={d['mean']:.4f}  std={d['std']:.4f}"
+)
+print(
+    f"hgb_tuned_rich   : folds={[round(v, 3) for v in t['folds']]}  "
+    f"mean={t['mean']:.4f}  std={t['std']:.4f}"
+)
 print(f"Best params      : {best_params}")
 print(f"Best model       : {best_name}  (gain vs other: {gain:+.4f})")
 print(f"CV  report URL   : {cv_url}  [{cv_key}]")
@@ -345,12 +368,15 @@ metadata = {
     "n_iter": N_ITER,
     "sanity_mean_rmse": sanity_mean,
     "hgb_default_rich": {"folds": d["folds"], "mean": d["mean"], "std": d["std"]},
-    "hgb_tuned_rich":   {"folds": t["folds"], "mean": t["mean"], "std": t["std"]},
-    "best_params": {k: float(v) if hasattr(v, "item") else v
-                    for k, v in best_params.items()},
+    "hgb_tuned_rich": {"folds": t["folds"], "mean": t["mean"], "std": t["std"]},
+    "best_params": {
+        k: float(v) if hasattr(v, "item") else v for k, v in best_params.items()
+    },
     "best_model": best_name,
-    "cv_report_key": cv_key, "cv_report_url": cv_url,
-    "estimator_report_key": est_key, "estimator_report_url": est_url,
+    "cv_report_key": cv_key,
+    "cv_report_url": cv_url,
+    "estimator_report_key": est_key,
+    "estimator_report_url": est_url,
     "csv_path": str(csv_path),
 }
 meta_path = SUBMISSIONS_DIR / f"{est_key}_metadata.json"

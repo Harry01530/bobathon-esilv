@@ -58,23 +58,23 @@ def _build_pred_features(pred: np.ndarray, raw: pd.DataFrame) -> pd.DataFrame:
     feat_s["pred"] = pred_sorted
 
     # Group in sorted space
-    tmp = pd.DataFrame({"pid": pids_sorted, "pred": pred_sorted, "age": ages_sorted},
-                       index=order)
+    tmp = pd.DataFrame(
+        {"pid": pids_sorted, "pred": pred_sorted, "age": ages_sorted}, index=order
+    )
     g = tmp.groupby("pid", sort=False)
 
-    feat_s["pred_s1"]  = g["pred"].shift(1)
-    feat_s["pred_s2"]  = g["pred"].shift(2)
-    feat_s["pred_m1"]  = g["pred"].shift(-1)
-    feat_s["pred_m2"]  = g["pred"].shift(-2)
+    feat_s["pred_s1"] = g["pred"].shift(1)
+    feat_s["pred_s2"] = g["pred"].shift(2)
+    feat_s["pred_m1"] = g["pred"].shift(-1)
+    feat_s["pred_m2"] = g["pred"].shift(-2)
     feat_s["pred_pmean"] = g["pred"].transform("mean")
 
     feat_s["pred_cmean"] = g["pred"].transform(lambda s: s.expanding().mean())
 
     # Rolling (centered, min_periods=1)
     for w, name in [(3, "pred_roll3"), (5, "pred_roll5")]:
-        rolled = (
-            tmp.groupby("pid")["pred"]
-            .apply(lambda x: x.rolling(w, center=True, min_periods=1).mean())
+        rolled = tmp.groupby("pid")["pred"].apply(
+            lambda x: x.rolling(w, center=True, min_periods=1).mean()
         )
         rolled.index = rolled.index.droplevel(0)
         feat_s[name] = rolled
@@ -131,7 +131,9 @@ class TwoStageHGB(BaseEstimator, RegressorMixin):
     @staticmethod
     def _hgb():
         return HistGradientBoostingRegressor(
-            max_iter=300, learning_rate=0.05, random_state=0,
+            max_iter=300,
+            learning_rate=0.05,
+            random_state=0,
             categorical_features="from_dtype",
         )
 
@@ -158,8 +160,9 @@ class TwoStageHGB(BaseEstimator, RegressorMixin):
 
         # ── Stage-2 feature matrix ────────────────────────────────────
         pred_feats = _build_pred_features(oof_pred, X)
-        Xf2 = pd.concat([Xf.reset_index(drop=True),
-                         pred_feats.reset_index(drop=True)], axis=1)
+        Xf2 = pd.concat(
+            [Xf.reset_index(drop=True), pred_feats.reset_index(drop=True)], axis=1
+        )
 
         # ── Stage 2 fit ───────────────────────────────────────────────
         self.stage2_ = self._hgb().fit(Xf2, y)
@@ -172,6 +175,7 @@ class TwoStageHGB(BaseEstimator, RegressorMixin):
         Xf = bfn(X)
         pred1 = self.stage1_.predict(Xf)
         pred_feats = _build_pred_features(pred1, X)
-        Xf2 = pd.concat([Xf.reset_index(drop=True),
-                         pred_feats.reset_index(drop=True)], axis=1)
+        Xf2 = pd.concat(
+            [Xf.reset_index(drop=True), pred_feats.reset_index(drop=True)], axis=1
+        )
         return self.stage2_.predict(Xf2)

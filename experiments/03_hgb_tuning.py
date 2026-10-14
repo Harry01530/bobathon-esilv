@@ -31,17 +31,16 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import skore
+from parkinson.hub import load_skore_credentials
 from scipy.stats import loguniform, randint
-from skore import login
 from sklearn.base import clone
 from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.model_selection import GroupKFold, RandomizedSearchCV
-
-from parkinson.hub import load_skore_credentials
+from skore import login
 
 # ── Settings ──────────────────────────────────────────────────────────────────
-N_ITER = 30                 # random-search candidates per feature set
-TUNE_SEED = 42              # seed for the shuffled tuning folds
+N_ITER = 30  # random-search candidates per feature set
+TUNE_SEED = 42  # seed for the shuffled tuning folds
 FEATURE_SETS = ["mixed", "mixed_patient"]
 OTHMANE_BEST_RMSE = 7.427018
 
@@ -51,8 +50,14 @@ SUBMISSIONS_DIR = PROJECT_ROOT / "submissions"
 SUBMISSIONS_DIR.mkdir(exist_ok=True)
 
 NUMERIC_COLS = [
-    "sexM", "age_at_diagnosis", "age", "ledd",
-    "time_since_intake_on", "time_since_intake_off", "on", "off",
+    "sexM",
+    "age_at_diagnosis",
+    "age",
+    "ledd",
+    "time_since_intake_on",
+    "time_since_intake_off",
+    "on",
+    "off",
 ]
 CAT_COLS = ["cohort", "gene"]
 FORBIDDEN = {"Index", "patient_id", "target"}
@@ -123,7 +128,9 @@ def shuffled_group_folds(groups: np.ndarray, n_splits: int, seed: int):
 
 def check_disjoint(splits, label):
     for k, (tr, te) in enumerate(splits):
-        assert not set(groups[tr]) & set(groups[te]), f"{label}: patient leak in fold {k}"
+        assert not set(groups[tr]) & set(groups[te]), (
+            f"{label}: patient leak in fold {k}"
+        )
 
 
 tune_splits = shuffled_group_folds(groups, 5, TUNE_SEED)
@@ -156,8 +163,10 @@ def cv_fold_rmses(cv_report, label: str):
     folds = df.values.flatten().tolist()
     assert len(folds) == 5 and all(np.isfinite(v) for v in folds), f"{label}: {folds}"
     arr = np.array(folds)
-    print(f"  {label:28s} folds={[round(v, 3) for v in folds]} "
-          f"mean={arr.mean():.4f} std={arr.std():.4f}")
+    print(
+        f"  {label:28s} folds={[round(v, 3) for v in folds]} "
+        f"mean={arr.mean():.4f} std={arr.std():.4f}"
+    )
     return folds, float(arr.mean()), float(arr.std())
 
 
@@ -188,7 +197,9 @@ for fs in FEATURE_SETS:
     print("Evaluation on the 02 folds (GroupKFold on patient_id):")
     comp = skore.evaluate(
         {f"hgb_default_{fs}": default, f"hgb_tuned_{fs}": tuned},
-        X, y, splitter=eval_splits,
+        X,
+        y,
+        splitter=eval_splits,
     )
     for name, cv_rep in comp.reports_.items():
         folds, mean, std = cv_fold_rmses(cv_rep, name)
@@ -197,7 +208,9 @@ for fs in FEATURE_SETS:
             "cv_report": cv_rep,
             "model": default if name.startswith("hgb_default") else tuned,
             "params": None if name.startswith("hgb_default") else best_params,
-            "folds": folds, "mean": mean, "std": std,
+            "folds": folds,
+            "mean": mean,
+            "std": std,
         }
 
 # ── Summary ───────────────────────────────────────────────────────────────────
@@ -268,13 +281,20 @@ metadata = {
     "n_iter": N_ITER,
     "reference_rmse_02": OTHMANE_BEST_RMSE,
     "all_models": {
-        k: {"feature_set": v["feature_set"], "params": v["params"],
-            "fold_rmse": v["folds"], "mean": v["mean"], "std": v["std"]}
+        k: {
+            "feature_set": v["feature_set"],
+            "params": v["params"],
+            "fold_rmse": v["folds"],
+            "mean": v["mean"],
+            "std": v["std"],
+        }
         for k, v in results.items()
     },
     "best_model": best_name,
-    "cv_report_key": cv_key, "cv_report_url": cv_url,
-    "estimator_report_key": est_key, "estimator_report_url": est_url,
+    "cv_report_key": cv_key,
+    "cv_report_url": cv_url,
+    "estimator_report_key": est_key,
+    "estimator_report_url": est_url,
     "csv_path": str(csv_path),
 }
 meta_path = SUBMISSIONS_DIR / f"{est_key}_metadata.json"

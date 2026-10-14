@@ -1,0 +1,6 @@
+2026-10-14 08:11:55  INFO      Train: 44590 rows, 5576 patients — folds are patient-disjoint [ok]
+2026-10-14 08:11:55  INFO      Evaluating ensemble members on eval_splits …
+2026-10-14 08:16:04  INFO        model_a (shallow, prior=0.3)   folds=[2.733, 2.684, 2.653, 2.684, 2.726]  mean=2.6960  std=0.0297
+2026-10-14 08:25:05  INFO        model_b (deep,    prior=0.3)   folds=[2.744, 2.689, 2.659, 2.666, 2.717]  mean=2.6950  std=0.0317
+2026-10-14 08:25:05  INFO        ensemble (avg a+b)             folds=[2.719, 2.667, 2.637, 2.655, 2.703]  mean=2.6765  std=0.0304
+2026-10-14 08:25:05  INFO      Gate passed: ensemble RMSE 2.6765 < 2.6772  (gain: +0.0007)
