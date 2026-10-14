@@ -15,24 +15,24 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import skore
-from skore import login
 from sklearn.base import clone
 from sklearn.model_selection import GroupKFold
+from skore import login
 
 from parkinsons.features import build_features, make_cat_dtypes
 from parkinsons.hub import load_skore_credentials
 from parkinsons.two_stage import TwoStageHGB
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-PROJECT_ROOT    = Path(__file__).resolve().parents[1]
-DATA_DIR        = PROJECT_ROOT / "data" / "Kaggle_officiel"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = PROJECT_ROOT / "data" / "Kaggle_officiel"
 SUBMISSIONS_DIR = PROJECT_ROOT / "submissions"
 SUBMISSIONS_DIR.mkdir(exist_ok=True)
 
 # ── Load data ─────────────────────────────────────────────────────────────────
 X_train_raw = pd.read_csv(DATA_DIR / "X_train.csv")
-X_test_raw  = pd.read_csv(DATA_DIR / "X_test.csv")
-sample_sub  = pd.read_csv(DATA_DIR / "sample_submission.csv")
+X_test_raw = pd.read_csv(DATA_DIR / "X_test.csv")
+sample_sub = pd.read_csv(DATA_DIR / "sample_submission.csv")
 y = (
     pd.read_csv(DATA_DIR / "y_train.csv")
     .set_index("Index")["target"]
@@ -51,6 +51,7 @@ for k, (tr, te) in enumerate(eval_splits):
 print(f"Train: {len(X_train_raw)} rows, {len(np.unique(groups))} patients")
 print("Eval folds are patient-disjoint [ok]")
 
+
 # ── Feature builder closure (fixes cat_dtypes) ────────────────────────────────
 def _build(raw: pd.DataFrame) -> pd.DataFrame:
     return build_features(raw, CAT_DTYPES)
@@ -66,13 +67,16 @@ print(f"Feature matrix: {X_full.shape[1]} columns")
 
 # ── CV helper ─────────────────────────────────────────────────────────────────
 def cv_fold_rmses(cv_report, label: str):
-    df    = cv_report.metrics.get("rmse", data_source="test", aggregate=None)
+    df = cv_report.metrics.get("rmse", data_source="test", aggregate=None)
     folds = df.values.flatten().tolist()
-    assert len(folds) == 5 and all(np.isfinite(v) for v in folds), \
+    assert len(folds) == 5 and all(np.isfinite(v) for v in folds), (
         f"{label}: bad folds {folds}"
+    )
     arr = np.array(folds)
-    print(f"  {label:28s} folds={[round(v, 3) for v in folds]} "
-          f"mean={arr.mean():.4f} std={arr.std():.4f}")
+    print(
+        f"  {label:28s} folds={[round(v, 3) for v in folds]} "
+        f"mean={arr.mean():.4f} std={arr.std():.4f}"
+    )
     return folds, float(arr.mean()), float(arr.std())
 
 
@@ -120,7 +124,7 @@ def put_and_capture_url(key: str, report) -> str:
     return urls[-1].rstrip("/") if urls else "url-not-captured"
 
 
-cv_key  = free_key("05_cv_two_stage")
+cv_key = free_key("05_cv_two_stage")
 try:
     cv_url = put_and_capture_url(cv_key, cv_report)
 except Exception as e:
@@ -156,8 +160,10 @@ submission.to_csv(csv_path, index=False)
 
 # ── Final output ──────────────────────────────────────────────────────────────
 print(f"\n{'=' * 62}")
-print(f"TwoStageHGB : folds={[round(v, 3) for v in folds]}  "
-      f"mean={mean_rmse:.4f}  std={std_rmse:.4f}")
+print(
+    f"TwoStageHGB : folds={[round(v, 3) for v in folds]}  "
+    f"mean={mean_rmse:.4f}  std={std_rmse:.4f}"
+)
 print(f"CV  report URL : {cv_url}  [{cv_key}]")
 print(f"Est report URL : {est_url}  [{est_key}]")
 print(f"Submission CSV : {csv_path}  ({len(submission)} rows)")

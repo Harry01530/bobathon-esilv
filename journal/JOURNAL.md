@@ -12,8 +12,8 @@ stem).
 
 - **Project / dataset:** Parkinson's Disease UPDRS Motor Score — regression
 - **Goal:** Predict the UPDRS motor score (`target`) for each patient visit from clinical features; minimise prediction error on the held-out test set.
-- **Last experiment:** 04_hgb_rich_patient_feats — done
-- **Last result:** mean grouped-CV RMSE 3.4831 (hgb_tuned_rich, GroupKFold 5, Kaggle_officiel)
+- **Last experiment:** 11_target_vcorr — done
+- **Last result:** mean grouped-CV RMSE 2.8127 (TwoStageMLE use_vcorr=True — régression, 10 reste le meilleur à 2.6772)
 - **Verified Kaggle public result:** 7.142 — Othmane, 2026-10-07, team Julien Gouel.
 - **Team handoff:** [Othmane's solution, data provenance and next steps](OTHMANE_HANDOFF.md).
 
@@ -43,6 +43,13 @@ stem).
 | `01_dummy` | DummyRegressor(mean) baseline — floor for all future models | done | RMSE 16.48 (0.2 holdout) | [01_dummy.md](01_dummy.md) |
 | `02_day2_models` | Four-model comparison with 5-fold patient-grouped CV; best: hgbr_mixed | done | mean CV RMSE 7.43 (hgbr_mixed, GroupKFold 5, official data) | [02_day2_models.md](02_day2_models.md) |
 | `04_hgb_rich_patient_feats` | Rich per-patient temporal features + tuned HGB | done | mean CV RMSE 3.4831 ± 0.0167 (hgb_tuned_rich, GroupKFold 5) | [04_hgb_rich_patient_feats.md](04_hgb_rich_patient_feats.md) |
+| `05_two_stage` | Two-stage HGB: stage-1 OOF predictions as extra features for stage 2 | done | mean CV RMSE 3.2618 ± 0.0255 (TwoStageHGB, GroupKFold 5) — [CV report](https://skore.probabl.ai/julien.gouel/bobathon-esilv/cross-validations/60514) · [Est report](https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/60520) | — |
+| `05_two_stage` (re-run) | Re-run of 05_two_stage.py with current features.py (99 cols, blocks 1–4); no code change | done | mean CV RMSE **2.7120** ± 0.0225, folds=[2.728, 2.697, 2.685, 2.702, 2.747] (TwoStageHGB, GroupKFold 5) — URLs not captured (refit timed out) | — |
+| `06_two_stage_stack` | Stack HGB+Ridge+ET on top of two-stage OOF features, log1p target transform | done | mean CV RMSE 3.2586 ± 0.0291 (two_stage_stack_log1p, GroupKFold 5) — [CV report](https://skore.probabl.ai/julien.gouel/bobathon-esilv/cross-validations/60813) · [Est report](https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/60819) | — |
+| `08_two_stage_envelope` | TwoStageHGB with 27 new latent/visit/envelope features (99 cols total) | done | mean CV RMSE 2.7120 ± 0.0225 (TwoStageHGB, GroupKFold 5) — [CV report](https://skore.probabl.ai/julien.gouel/bobathon-esilv/cross-validations/60938) · [Est report](https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/60944) | — |
+| `09_two_stage_mle` | TwoStageMLE: EMG bias-likelihood block 5 (112 cols), per-patient quadratic+isotonic projection | done | mean CV RMSE 2.6905 ± 0.0449 (TwoStageMLE, GroupKFold 5) — [CV report](https://skore.probabl.ai/julien.gouel/bobathon-esilv/cross-validations/61428) · [Est report](https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/61434) | [09_two_stage_mle.md](09_two_stage_mle.md) |
+| `10_mle_tuning` | Grid search over TwoStageMLE params; best: prior_scale=0.3 (tighter EB prior) | done | mean CV RMSE 2.6772 ± 0.0338 (+0.0133 vs 09) — [CV report](https://skore.probabl.ai/julien.gouel/bobathon-esilv/cross-validations/61684) · [Est report](https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/61690) | — |
+| `11_target_vcorr` | Axe 2 : stage 1 sur map_Vcorr clippé [0,132], stage 2 sur résidu y−ŷ₁ | done | mean CV RMSE 2.8127 ± 0.0445 (**régresse** vs 10 : −0.1355) | — |
 
 ## Backlog
 

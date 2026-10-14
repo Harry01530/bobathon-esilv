@@ -35,7 +35,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import skore
-from skore import login
 from sklearn.base import clone
 from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import HistGradientBoostingRegressor
@@ -43,13 +42,14 @@ from sklearn.impute import SimpleImputer
 from sklearn.linear_model import Ridge
 from sklearn.model_selection import GroupKFold
 from sklearn.pipeline import make_pipeline
+from skore import login
 from skrub import TableVectorizer
 
 from parkinsons.hub import load_skore_credentials
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR     = PROJECT_ROOT / "data" / "kaggle_official"   # official competition source
+DATA_DIR = PROJECT_ROOT / "data" / "kaggle_official"  # official competition source
 SUBMISSIONS_DIR = PROJECT_ROOT / "submissions"
 SUBMISSIONS_DIR.mkdir(exist_ok=True)
 
@@ -64,8 +64,14 @@ y = y_series.values
 
 # ── Feature sets (excludes target, Index, patient_id) ────────────────────────
 NUMERIC_COLS = [
-    "sexM", "age_at_diagnosis", "age", "ledd",
-    "time_since_intake_on", "time_since_intake_off", "on", "off",
+    "sexM",
+    "age_at_diagnosis",
+    "age",
+    "ledd",
+    "time_since_intake_on",
+    "time_since_intake_off",
+    "on",
+    "off",
 ]
 MIXED_COLS = NUMERIC_COLS + ["cohort", "gene"]
 
@@ -73,13 +79,13 @@ X_num = X_train_raw[NUMERIC_COLS]
 
 X_mixed = X_train_raw[MIXED_COLS].copy()
 X_mixed["cohort"] = X_mixed["cohort"].astype("category")
-X_mixed["gene"]   = X_mixed["gene"].astype("category")
+X_mixed["gene"] = X_mixed["gene"].astype("category")
 
 # ── Precompute identical GroupKFold(5) splits ─────────────────────────────────
 # Splits are precomputed once so all models use the exact same fold boundaries.
 groups = X_train_raw["patient_id"].values
 gkf = GroupKFold(n_splits=5)
-cv_splits_num   = list(gkf.split(X_num, y, groups=groups))
+cv_splits_num = list(gkf.split(X_num, y, groups=groups))
 cv_splits_mixed = list(gkf.split(X_mixed, y, groups=groups))
 
 # Sanity: patient disjointness on last fold
@@ -87,13 +93,15 @@ tr_idx, te_idx = cv_splits_num[-1]
 tr_patients = set(groups[tr_idx])
 te_patients = set(groups[te_idx])
 assert len(tr_patients & te_patients) == 0, "Patient leak in fold!"
-print(f"Train: {X_num.shape}  |  {len(np.unique(groups))} patients  |  5-fold GroupKFold")
+print(
+    f"Train: {X_num.shape}  |  {len(np.unique(groups))} patients  |  5-fold GroupKFold"
+)
 print(f"Fold-5 holdout: {len(te_idx)} rows, {len(te_patients)} patients (disjoint ✓)")
 
 # ── Define estimators ─────────────────────────────────────────────────────────
-dummy   = DummyRegressor(strategy="mean")
-ridge   = make_pipeline(SimpleImputer(strategy="median"), Ridge(alpha=1.0))
-hgbr_num   = HistGradientBoostingRegressor(random_state=0)
+dummy = DummyRegressor(strategy="mean")
+ridge = make_pipeline(SimpleImputer(strategy="median"), Ridge(alpha=1.0))
+hgbr_num = HistGradientBoostingRegressor(random_state=0)
 hgbr_mixed = make_pipeline(
     TableVectorizer(),
     HistGradientBoostingRegressor(random_state=0),
@@ -117,6 +125,7 @@ cv_mixed = skore.evaluate(hgbr_mixed, X_mixed, y, splitter=cv_splits_mixed)
 # ── Extract per-model per-fold RMSE ──────────────────────────────────────────
 # comp_report.reports_ is a dict[str, CrossValidationReport]
 
+
 def cv_fold_rmses(cv_report: skore.CrossValidationReport, label: str):
     """Return per-fold RMSEs from a CrossValidationReport.
 
@@ -135,7 +144,10 @@ def cv_fold_rmses(cv_report: skore.CrossValidationReport, label: str):
         f"{label}: non-finite fold RMSE: {fold_vals}"
     )
     arr = np.array(fold_vals)
-    print(f"  {label:16s}: folds={[round(v,4) for v in arr]}  mean={arr.mean():.4f}  std={arr.std():.4f}")
+    print(
+        f"  {label:16s}: folds={[round(v, 4) for v in arr]}"
+        f"  mean={arr.mean():.4f}  std={arr.std():.4f}"
+    )
     return fold_vals, float(arr.mean())
 
 
@@ -143,15 +155,24 @@ print("\n=== Grouped CV RMSE (5-fold, patient-grouped) ===")
 results = {}
 for name, cv_rep in comp_report.reports_.items():
     folds, mean = cv_fold_rmses(cv_rep, name)
-    results[name] = {"cv_report": cv_rep, "folds": folds, "mean": mean,
-                     "X": X_num, "model": {"dummy_mean": dummy, "ridge": ridge,
-                                           "hgbr_num": hgbr_num}[name],
-                     "cv_splits": cv_splits_num}
+    results[name] = {
+        "cv_report": cv_rep,
+        "folds": folds,
+        "mean": mean,
+        "X": X_num,
+        "model": {"dummy_mean": dummy, "ridge": ridge, "hgbr_num": hgbr_num}[name],
+        "cv_splits": cv_splits_num,
+    }
 
 mixed_folds, mixed_mean = cv_fold_rmses(cv_mixed, "hgbr_mixed")
-results["hgbr_mixed"] = {"cv_report": cv_mixed, "folds": mixed_folds,
-                         "mean": mixed_mean, "X": X_mixed,
-                         "model": hgbr_mixed, "cv_splits": cv_splits_mixed}
+results["hgbr_mixed"] = {
+    "cv_report": cv_mixed,
+    "folds": mixed_folds,
+    "mean": mixed_mean,
+    "X": X_mixed,
+    "model": hgbr_mixed,
+    "cv_splits": cv_splits_mixed,
+}
 
 best_name = min(results, key=lambda k: results[k]["mean"])
 print(f"\nBest model: {best_name}  mean CV RMSE = {results[best_name]['mean']:.4f}")
@@ -163,6 +184,7 @@ project = skore.Project(name="bobathon-esilv", mode="hub", workspace=cfg["worksp
 
 existing_keys = set(project.summarize().frame()["key"].tolist())
 
+
 def free_key(base: str, existing: set) -> str:
     if base not in existing:
         return base
@@ -170,6 +192,7 @@ def free_key(base: str, existing: set) -> str:
     while f"{base}_{i}" in existing:
         i += 1
     return f"{base}_{i}"
+
 
 def put_and_capture_url(key: str, report) -> str:
     """Call project.put and return the URL printed to the rich console.
@@ -182,10 +205,10 @@ def put_and_capture_url(key: str, report) -> str:
     project.put(key, report)
     captured = skore.console.end_capture()
     # Match https:// followed by any non-whitespace, non-bracket chars
-    urls = re.findall(r'https://[^\s\]>]+', captured)
+    urls = re.findall(r"https://[^\s\]>]+", captured)
     if not urls:
         return "url-not-captured"
-    url = urls[-1].rstrip("/")           # strip any trailing slash
+    url = urls[-1].rstrip("/")  # strip any trailing slash
     assert " " not in url, f"Whitespace in captured URL: {url!r}"
     return url
 
@@ -207,12 +230,12 @@ est_url = put_and_capture_url(est_key, fold_est_report)
 existing_keys.add(est_key)
 print(f"  Printed URL: {est_url}")
 
-print(f"\n{'='*60}")
+print(f"\n{'=' * 60}")
 print(f"Best CV report key : {best_cv_key}")
 print(f"Best CV report URL : {best_cv_url}")
 print(f"EstimatorReport key: {est_key}")
 print(f"EstimatorReport URL: {est_url}")
-print(f"{'='*60}")
+print(f"{'=' * 60}")
 
 # ── Fit on all training data and write submission CSV ─────────────────────────
 print(f"\nFitting {best_name} on all {len(X_num)} training rows …")
@@ -224,7 +247,7 @@ X_test_raw = pd.read_csv(DATA_DIR / "X_test.csv")
 if best_name == "hgbr_mixed":
     X_test_feat = X_test_raw[MIXED_COLS].copy()
     X_test_feat["cohort"] = X_test_feat["cohort"].astype("category")
-    X_test_feat["gene"]   = X_test_feat["gene"].astype("category")
+    X_test_feat["gene"] = X_test_feat["gene"].astype("category")
 else:
     X_test_feat = X_test_raw[NUMERIC_COLS]
 
@@ -232,7 +255,9 @@ preds = final_model.predict(X_test_feat)
 
 # Validate
 sample_sub = pd.read_csv(DATA_DIR / "sample_submission.csv")
-assert len(preds) == len(sample_sub), f"Row count mismatch: {len(preds)} vs {len(sample_sub)}"
+assert len(preds) == len(sample_sub), (
+    f"Row count mismatch: {len(preds)} vs {len(sample_sub)}"
+)
 assert np.all(np.isfinite(preds)), "Non-finite predictions detected"
 
 # Align to sample_submission Index order
@@ -246,22 +271,25 @@ assert list(submission.columns) == ["Index", "target"]
 
 csv_path = SUBMISSIONS_DIR / f"{est_key}.csv"
 submission.to_csv(csv_path, index=False)
-print(f"Submission CSV: {csv_path}  ({len(submission)} rows, columns={list(submission.columns)})")
+print(
+    f"Submission CSV: {csv_path}"
+    f"  ({len(submission)} rows, columns={list(submission.columns)})"
+)
 print(f"  pred range: [{preds.min():.2f}, {preds.max():.2f}]  mean={preds.mean():.4f}")
 
 # ── Metadata JSON ─────────────────────────────────────────────────────────────
 metadata = {
-    "data_source":           str(DATA_DIR),
-    "model_name":            best_name,
-    "cv_splits":             "GroupKFold(n_splits=5, groups=patient_id)",
-    "fold_rmse":             results[best_name]["folds"],
-    "mean_cv_rmse":          results[best_name]["mean"],
-    "all_models_mean_rmse":  {k: v["mean"] for k, v in results.items()},
-    "best_cv_key":           best_cv_key,
-    "best_cv_url":           best_cv_url,
-    "estimator_report_key":  est_key,
-    "estimator_report_url":  est_url,
-    "csv_path":              str(csv_path),
+    "data_source": str(DATA_DIR),
+    "model_name": best_name,
+    "cv_splits": "GroupKFold(n_splits=5, groups=patient_id)",
+    "fold_rmse": results[best_name]["folds"],
+    "mean_cv_rmse": results[best_name]["mean"],
+    "all_models_mean_rmse": {k: v["mean"] for k, v in results.items()},
+    "best_cv_key": best_cv_key,
+    "best_cv_url": best_cv_url,
+    "estimator_report_key": est_key,
+    "estimator_report_url": est_url,
+    "csv_path": str(csv_path),
 }
 meta_path = SUBMISSIONS_DIR / f"{est_key}_metadata.json"
 meta_path.write_text(json.dumps(metadata, indent=2))

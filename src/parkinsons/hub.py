@@ -19,9 +19,7 @@ def _find_skore(path: Path | None = None) -> Path:
         dest = Path(path)
         if dest.is_file():
             return dest
-        raise FileNotFoundError(
-            f"Missing {dest}. Run: python scripts/install_skore.py"
-        )
+        raise FileNotFoundError(f"Missing {dest}. Run: python scripts/install_skore.py")
     starts = [Path.cwd().resolve(), Path(__file__).resolve().parent]
     seen: set[Path] = set()
     for start in starts:
@@ -34,9 +32,7 @@ def _find_skore(path: Path | None = None) -> Path:
                 return candidate
             if (folder / ".git").exists():
                 break
-    raise FileNotFoundError(
-        "Missing .skore. Run: python scripts/install_skore.py"
-    )
+    raise FileNotFoundError("Missing .skore. Run: python scripts/install_skore.py")
 
 
 def load_skore_credentials(path: Path | None = None) -> dict:
