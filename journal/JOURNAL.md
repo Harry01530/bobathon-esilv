@@ -50,6 +50,8 @@ stem).
 | `09_two_stage_mle` | TwoStageMLE: EMG bias-likelihood block 5 (112 cols), per-patient quadratic+isotonic projection | done | mean CV RMSE 2.6905 ± 0.0449 (TwoStageMLE, GroupKFold 5) — [CV report](https://skore.probabl.ai/julien.gouel/bobathon-esilv/cross-validations/61428) · [Est report](https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/61434) | [09_two_stage_mle.md](09_two_stage_mle.md) |
 | `10_mle_tuning` | Grid search over TwoStageMLE params; best: prior_scale=0.3 (tighter EB prior) | done | mean CV RMSE 2.6772 ± 0.0338 (+0.0133 vs 09) — [CV report](https://skore.probabl.ai/julien.gouel/bobathon-esilv/cross-validations/61684) · [Est report](https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/61690) | — |
 | `11_target_vcorr` | Axe 2 : stage 1 sur map_Vcorr clippé [0,132], stage 2 sur résidu y−ŷ₁ | done | mean CV RMSE 2.8127 ± 0.0445 (**régresse** vs 10 : −0.1355) | — |
+| `12b_make_csv` | Refit model_a + model_b on full train, write 12_final_ensemble.csv (no CV) | ready to run | — | [12b_make_csv.md](12b_make_csv.md) |
+| `13_hybrid_gru` | BiGRU(hidden=64, 2-layer, bidir) on visit sequences blended with HGB ensemble (avg TwoStageMLE shallow+deep, smooth=None), quad_iso final smoothing | ready to run | — | — |
 
 ## Backlog
 
