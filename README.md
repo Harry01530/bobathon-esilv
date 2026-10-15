@@ -69,3 +69,18 @@ See [SETUP.md step 5](docs/SETUP.md#5-install-skore-and-check-your-setup) for de
 ## Submission rules
 
 All code must be written and run in **Bob** (IDE or CLI), with evaluation through **skore**. Every Kaggle upload must put a Skore Hub EstimatorReport URL (`https://skore.probabl.ai/…`) in the Submission Description, and each Submission needs a **new** report key (`01_dummy`, `02_ridge`, …). Each experiment writes its file to `submissions/<report-key>.csv` (e.g. `submissions/02_ridge.csv`), so the filename matches the report key and a later model never overwrites an earlier submission. See the [competition rules](https://www.kaggle.com/competitions/bobathon-esilv/rules) for eligibility and what makes a Submission valid.
+
+## Solution finale
+
+Le meilleur résultat de l'équipe est l'expérience **13_hybrid_gru** :
+CV RMSE **2.5598 ± 0.0117** (GroupKFold 5, patient_id) —
+Kaggle public **2.642** (top 16 au moment de la soumission).
+
+Le rapport complet (chronologie de toutes les expériences, ce qui a fonctionné,
+étanchéité de l'évaluation, provenance du code, comment reproduire) est dans
+[**journal/FINAL_REPORT.md**](journal/FINAL_REPORT.md).
+
+| Soumission | CV RMSE | Kaggle public | Rapport Hub |
+|---|:---:|:---:|---|
+| `12_voting_ensemble` | 2.6784 | 2.708 | [Est. 82849](https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/82849) |
+| `13_fold5_hybrid_gru` ✅ | **2.5598** | **2.642** | [Est. 85398](https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/85398) |
