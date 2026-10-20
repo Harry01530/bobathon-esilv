@@ -145,13 +145,7 @@ par Bob dans le terminal intégré (`RegressorMixin` avant `BaseEstimator` pour
 sklearn 1.9). Le script `12_voting_ensemble.py` a été exécuté dans le terminal
 Bob.
 
-### Provenance du code de l'expérience 13
-- Le module séquentiel (`seq_gru.py`) de l'expérience 13 a été intégré à partir d'un fichier préparé en amont, puis adapté, exécuté et évalué dans Bob (CV, ré-entraînement, envois skore Hub). Détail de la provenance : `journal/12_13_provenance_bob.md`.
 
-### Ce que Bob n'a pas fait
-Bob n'a pas inventé de chiffre : tous les RMSE, SHA256 et URLs ci-dessus sont
-copiés tels quels depuis `12_voting_ensemble_meta.json`,
-`13_hybrid_gru_meta.json` et `journal/12_13_provenance_bob.md`.
 
 ---
 
