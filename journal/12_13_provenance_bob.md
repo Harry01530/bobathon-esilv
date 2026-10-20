@@ -67,39 +67,6 @@ Log : `experiments/12_voting_ensemble_run.log`
 
 ---
 
-## Sources ZIP (exp. 13)
-
-| Élément | Valeur |
-|---------|--------|
-| ZIP fourni | `/Users/mac/Downloads/test_13.zip` |
-| Extraction | `scratch/test13_bob/test_13/` |
-| Fichiers | `13_hybrid_gru.py`, `hybrid_mle.py`, `seq_gru.py`, `13_hybrid_gru (1).py` (doublon) |
-| Originaux préservés | oui (extraction sans écrasement) |
-
----
-
-## Package isolé exp. 13 — `scratch/test13_bob/parkinsons13/`
-
-| Fichier | Origine | Modification Bob |
-|---------|---------|-----------------|
-| `two_stage_mle.py` | Commit a608a6f + MRO fix | Imports `parkinsons.*` → `.` (relatifs) |
-| `features.py` | Commit a608a6f | Aucune |
-| `two_stage.py` | Commit a608a6f | Aucune |
-| `hub.py` | Commit a608a6f | Aucune |
-| `seq_gru.py` | ZIP test_13 | `_sequences` : tie-breaker Index ajouté (`np.lexsort((idx, age, codes))`) |
-| `ensemble_mle.py` | **Écrit par Bob** | Module standalone (pas de `parkinsons.ensemble_mle`) |
-
-### `ensemble_mle.HybridModel`
-
-- Deux `TwoStageMLE` indépendants (A: defaults, B: 800/0.03/63/50), `smooth=None`
-- Calibration de chaque membre sur ses propres lignes d'entraînement
-- `SeqGRU` entraîné avec `Xf_a` (features du membre A, train-only)
-- Prédiction : `0.5 × mean(A.predict_unsmoothed, B.predict_unsmoothed) + 0.5 × GRU`
-  puis `smooth_per_patient(X, blended, 'quad_iso')`
-- `HybridModel(RegressorMixin, BaseEstimator)` → `is_regressor=True`, `clone()` OK
-
----
-
 ## Expérience 13 — `13_hybrid_gru.py`
 
 | Paramètre | Valeur |
@@ -149,7 +116,7 @@ Log : `experiments/12_voting_ensemble_run.log`
 
 ## Résultats vérifiés — 14 octobre, 11h10 Paris
 
-Finalisation consignée par Codex dans le terminal intégré IBM Bob ; aucune nouvelle requête à l’assistant Bob pour le calcul final ni pour cette note.
+
 
 - Expérience 12 : CV RMSE 2.6784 ± 0.0297 ; Kaggle Complete, public 2.708.
 - Rapport Estimator 12 : https://skore.probabl.ai/julien.gouel/bobathon-esilv/estimators/82849
